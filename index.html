@@ -1,0 +1,53 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Embed Bot</title>
+    <script src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #webchat {
+            height: 600px;
+            width: 800px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+    <div id="webchat"></div>
+    <script>
+        (async function() {
+            // Generate a unique user ID (e.g., using a UUID)
+            const userID = 'user-' + Math.random().toString(36).substring(7);
+
+            // Set a username
+            const username = 'User ' + Math.random().toString(36).substring(2, 7);
+
+            // Fetch the token using the Web Chat secret
+            const res = await fetch('https://directline.botframework.com/v3/directline/tokens/generate', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer NPmxgYFPbvc.M8oDXmtcgWvK-voz52_YzI7LLZYbKTnH375eNj-NfIo'
+                }
+            });
+            const { token } = await res.json();
+
+            // Render the Web Chat with the token, user ID, and username
+            window.WebChat.renderWebChat({
+                directLine: window.WebChat.createDirectLine({
+                    token: token
+                }),
+                userID: userID,
+                username: username,
+                locale: 'en-US'
+            }, document.getElementById('webchat'));
+        })();
+    </script>
+</body>
+</html>
