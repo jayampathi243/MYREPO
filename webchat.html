@@ -1,41 +1,53 @@
+
 <!DOCTYPE html>
-<html lang="en-US">
-  <head>
-    <title>Web Chat: Full-featured bundle</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script crossorigin="anonymous" src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
+<html>
+<head>
+    <title>Embed Bot</title>
+    <script src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
     <style>
-      html,
-      body {
-        height: 100%;
-      }
-
-      body {
-        margin: 0;
-      }
-
-      #webchat {
-        height: 100%;
-        width: 100%;
-      }
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #webchat {
+            height: 600px;
+            width: 800px;
+            border: 1px solid #ccc;
+        }
     </style>
-  </head>
-  <body>
-    <div id="webchat" role="main"></div>
+</head>
+<body>
+    <div id="webchat"></div>
     <script>
-      (async function() {
-        const res = await fetch('https://webchat-mockbot.azurewebsites.net/directline/token', { method: 'POST' });
-        const { token } = await res.json();
+        (async function() {
+            // Generate a unique user ID (e.g., using a UUID)
+            const userID = 'user-' + Math.random().toString(36).substring(7);
 
-        window.WebChat.renderWebChat(
-          {
-            directLine: window.WebChat.createDirectLine({ secret: 'ce3jXTNpfyI.Y80Y91UXiGEEaSV3tEm64kUCijvkvVXgxE38xntiGZ8'})
-          },
-          document.getElementById('webchat')
-        );
+            // Set a username
+            const username = 'User ' + Math.random().toString(36).substring(2, 7);
 
-        document.querySelector('#webchat > *').focus();
-      })().catch(err => console.error(err));
+            // Fetch the token using the Web Chat secret
+            const res = await fetch('https://directline.botframework.com/v3/directline/tokens/generate', {
+                method: 'POST',
+                headers: {
+                    'Authorization': 'Bearer NPmxgYFPbvc.M8oDXmtcgWvK-voz52_YzI7LLZYbKTnH375eNj-NfIo'
+                }
+            });
+            const { token } = await res.json();
+
+            // Render the Web Chat with the token, user ID, and username
+            window.WebChat.renderWebChat({
+                directLine: window.WebChat.createDirectLine({
+                    token: token
+                }),
+                userID: userID,
+                username: username,
+                locale: 'en-US'
+            }, document.getElementById('webchat'));
+        })();
     </script>
-  </body>
+</body>
 </html>
