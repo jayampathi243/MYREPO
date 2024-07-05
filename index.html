@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -35,31 +34,57 @@
             scopes: ['user.read']
         };
 
-        msalInstance.loginPopup(loginRequest).then(loginResponse => {
-            // Get account information
+        function initializeWebChat(tokenResponse) {
             const account = msalInstance.getAllAccounts()[0];
+            const userID = account.localAccountId;
+            const username = account.username;
 
-            // Fetch user profile information
-            msalInstance.acquireTokenSilent(loginRequest).then(tokenResponse => {
-                const userID = account.localAccountId;
-                const username = account.username;
+            // Replace with your Direct Line secret
+            const directLineSecret = 'ce3jXTNpfyI.Y80Y91UXiGEEaSV3tEm64kUCijvkvVXgxE38xntiGZ8';
 
-                // Replace with your Direct Line secret
-                const directLineSecret = 'ce3jXTNpfyI.Y80Y91UXiGEEaSV3tEm64kUCijvkvVXgxE38xntiGZ8';
+            window.WebChat.renderWebChat({
+                directLine: window.WebChat.createDirectLine({
+                    secret: directLineSecret
+                }),
+                userID: userID,
+                username: username,
+                locale: 'en-US'
+            }, document.getElementById('webchat'));
+        }
 
-                window.WebChat.renderWebChat({
-                    directLine: window.WebChat.createDirectLine({
-                        secret: directLineSecret
-                    }),
-                    userID: userID,
-                    username: username,
-                    locale: 'en-US'
-                }, document.getElementById('webchat'));
-            }).catch(error => {
-                console.error(error);
-            });
+        msalInstance.handleRedirectPromise().then((response) => {
+            if (response !== null) {
+                msalInstance.setActiveAccount(response.account);
+            }
+
+            const account = msalInstance.getAllAccounts()[0];
+            if (account) {
+                msalInstance.acquireTokenSilent(loginRequest).then(initializeWebChat).catch((error) => {
+                    if (error instanceof msal.InteractionRequiredAuthError) {
+                        msalInstance.acquireTokenPopup(loginRequest).then(initializeWebChat).catch(error => {
+                            console.error('Popup acquire token failed:', error);
+                        });
+                    } else {
+                        console.error('Silent acquire token failed:', error);
+                    }
+                });
+            } else {
+                msalInstance.loginPopup(loginRequest).then((loginResponse) => {
+                    msalInstance.acquireTokenSilent(loginRequest).then(initializeWebChat).catch((error) => {
+                        if (error instanceof msal.InteractionRequiredAuthError) {
+                            msalInstance.acquireTokenPopup(loginRequest).then(initializeWebChat).catch(error => {
+                                console.error('Popup acquire token failed:', error);
+                            });
+                        } else {
+                            console.error('Silent acquire token failed:', error);
+                        }
+                    });
+                }).catch(error => {
+                    console.error('Login failed:', error);
+                });
+            }
         }).catch(error => {
-            console.error(error);
+            console.error('Redirect promise failed:', error);
         });
     </script>
 </body>
