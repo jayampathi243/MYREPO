@@ -2,52 +2,65 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Embed Bot</title>
+    <title>Bot Integration</title>
     <script src="https://cdn.botframework.com/botframework-webchat/latest/webchat.js"></script>
+    <script src="https://alcdn.msauth.net/browser/2.14.2/js/msal-browser.min.js"></script>
     <style>
         html, body {
             height: 100%;
             margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
         }
+
         #webchat {
-            height: 600px;
-            width: 800px;
-            border: 1px solid #ccc;
+            height: 100%;
+            width: 100%;
         }
     </style>
 </head>
 <body>
     <div id="webchat"></div>
     <script>
-        (async function() {
-            // Generate a unique user ID (e.g., using a UUID)
-            const userID = 'user-' + Math.random().toString(36).substring(7);
+        // MSAL.js configuration
+        const msalConfig = {
+            auth: {
+                clientId: '6503f049-192a-40c7-ac71-0d0101257474', // Replace with your Azure AD client ID
+                authority: 'https://login.microsoftonline.com/b209e2b2-a1f7-44ea-94c5-3c09c252e151', // Replace with your Azure AD tenant ID
+                redirectUri: window.location.href
+            }
+        };
 
-            // Set a username
-            const username = 'User ' + Math.random().toString(36).substring(2, 7);
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
 
-            // Fetch the token using the Web Chat secret
-            const res = await fetch('https://directline.botframework.com/v3/directline/tokens/generate', {
-                method: 'POST',
-                headers: {
-                    'Authorization': 'Bearer NPmxgYFPbvc.M8oDXmtcgWvK-voz52_YzI7LLZYbKTnH375eNj-NfIo'
-                }
+        const loginRequest = {
+            scopes: ['user.read']
+        };
+
+        msalInstance.loginPopup(loginRequest).then(loginResponse => {
+            // Get account information
+            const account = msalInstance.getAllAccounts()[0];
+
+            // Fetch user profile information
+            msalInstance.acquireTokenSilent(loginRequest).then(tokenResponse => {
+                const userID = account.localAccountId;
+                const username = account.username;
+
+                // Replace with your Direct Line secret
+                const directLineSecret = 'ce3jXTNpfyI.Y80Y91UXiGEEaSV3tEm64kUCijvkvVXgxE38xntiGZ8';
+
+                window.WebChat.renderWebChat({
+                    directLine: window.WebChat.createDirectLine({
+                        secret: directLineSecret
+                    }),
+                    userID: userID,
+                    username: username,
+                    locale: 'en-US'
+                }, document.getElementById('webchat'));
+            }).catch(error => {
+                console.error(error);
             });
-            const { token } = await res.json();
-
-            // Render the Web Chat with the token, user ID, and username
-            window.WebChat.renderWebChat({
-                directLine: window.WebChat.createDirectLine({
-                    token: token
-                }),
-                userID: userID,
-                username: username,
-                locale: 'en-US'
-            }, document.getElementById('webchat'));
-        })();
+        }).catch(error => {
+            console.error(error);
+        });
     </script>
 </body>
 </html>
