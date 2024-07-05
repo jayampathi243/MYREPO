@@ -22,9 +22,13 @@
         // MSAL.js configuration
         const msalConfig = {
             auth: {
-                clientId: 'ed75be16-e44f-4365-97be-95e2d366da25', // Replace with your Azure AD client ID
+                clientId: '6503f049-192a-40c7-ac71-0d0101257474', // Replace with your Azure AD client ID
                 authority: 'https://login.microsoftonline.com/b209e2b2-a1f7-44ea-94c5-3c09c252e151', // Replace with your Azure AD tenant ID
                 redirectUri: window.location.href
+            },
+            cache: {
+                cacheLocation: 'localStorage', // This configures where your cache will be stored
+                storeAuthStateInCookie: true // Set to true for IE 11 or Edge Legacy support
             }
         };
 
@@ -52,14 +56,18 @@
             }, document.getElementById('webchat'));
         }
 
-        msalInstance.handleRedirectPromise().then((response) => {
+        msalInstance.handleRedirectPromise().then(response => {
             if (response !== null) {
                 msalInstance.setActiveAccount(response.account);
             }
 
             const account = msalInstance.getAllAccounts()[0];
             if (account) {
-                msalInstance.acquireTokenSilent(loginRequest).then(initializeWebChat).catch((error) => {
+                msalInstance.setActiveAccount(account);
+                msalInstance.acquireTokenSilent({
+                    ...loginRequest,
+                    account: account
+                }).then(initializeWebChat).catch(error => {
                     if (error instanceof msal.InteractionRequiredAuthError) {
                         msalInstance.acquireTokenPopup(loginRequest).then(initializeWebChat).catch(error => {
                             console.error('Popup acquire token failed:', error);
@@ -70,7 +78,11 @@
                 });
             } else {
                 msalInstance.loginPopup(loginRequest).then((loginResponse) => {
-                    msalInstance.acquireTokenSilent(loginRequest).then(initializeWebChat).catch((error) => {
+                    msalInstance.setActiveAccount(loginResponse.account);
+                    msalInstance.acquireTokenSilent({
+                        ...loginRequest,
+                        account: loginResponse.account
+                    }).then(initializeWebChat).catch((error) => {
                         if (error instanceof msal.InteractionRequiredAuthError) {
                             msalInstance.acquireTokenPopup(loginRequest).then(initializeWebChat).catch(error => {
                                 console.error('Popup acquire token failed:', error);
