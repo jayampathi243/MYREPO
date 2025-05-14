@@ -1,0 +1,48 @@
+
+<html>
+  <head>
+    <script src='https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.js'></script>
+    <link href='https://atlas.microsoft.com/sdk/javascript/mapcontrol/2/atlas.min.css' rel='stylesheet'/>
+    <style>
+      html, body, #map {
+        height: 100%; width: 100%; margin: 0; padding: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id='map'></div>
+    <script>
+      var map = new atlas.Map('map', {
+        center: [-122.3, 47.6],
+        zoom: 11,
+        authOptions: {
+          authType: 'subscriptionKey',
+          subscriptionKey: 'AzXJcK5XmrZdHCdOIV8Fa9b_IVNv2pqwxXtq4s8NxXs'
+        }
+      });
+
+      var data = [{"locationData":{"lat":43.68503741372106,"lon":-79.75960840450671,"weight":1}},{"locationData":{"lat":43.68503741372106,"lon":-79.75960840450671,"weight":1}},{"locationData":{"lat":43.68503741372106,"lon":-79.75960840450671,"weight":1}},{"locationData":{"lat":43.68503741372106,"lon":-79.75960840450671,"weight":1}},{"locationData":{"lat":43.68503741372106,"lon":-79.75960840450671,"weight":1}}];
+
+      map.events.add('ready', function () {
+        var points = data.map(function(item) {
+          return {
+            geometry: { type: 'Point', coordinates: [item.lon, item.lat] },
+            properties: { weight: item.weight }
+          };
+        });
+
+        var source = new atlas.source.DataSource();
+        map.sources.add(source);
+        source.add(points);
+
+        var heatmapLayer = new atlas.layer.HeatMapLayer(source, null, {
+          radius: 15,
+          weight: ['get', 'weight'],
+          opacity: 0.8
+        });
+
+        map.layers.add(heatmapLayer);
+      });
+    </script>
+  </body>
+</html>
