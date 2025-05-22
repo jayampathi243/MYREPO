@@ -1,0 +1,110 @@
+<html> <head> <meta charset = 'utf-8' /> <title> ArcGIS Heatmap </title>
+<meta name='viewport' content='initial-scale=1, maximum-scale=1, user-scalable=no' />
+<link rel = 'stylesheet'
+href = 'https://js.arcgis.com/4.29/esri/themes/light/main.css' /> <script src = 'https://js.arcgis.com/4.29/'> </script>
+<style> html, body, #viewDiv { height: 100%; width: 100%; margin: 0; padding: 0; } </style>
+</head>
+<body>
+   <div id='viewDiv'></div >
+   <script>
+   const data = [{
+   lat: 43.68503741372106,
+   lon: -79.75960840450671,
+   weight: 1
+   }, {
+   lat: 43.68503741372106,
+   lon: -79.75960840450671,
+   weight: 1
+   }, {
+   lat: 43.68503741372106,
+   lon: -79.75960840450671,
+   weight: 1
+   }, {
+   lat: 43.68503741372106,
+   lon: -79.75960840450671,
+   weight: 1
+   }, {
+   lat: 43.68503741372106,
+   lon: -79.75960840450671,
+   weight: 1
+   }, {
+   lat: 43.68503741372106,
+   lon: -79.75960840450671,
+   weight: 1
+   }, {
+   lat: 43.68503741372106,
+   lon: -79.75960840450671,
+   weight: 1
+   }, {
+   lat: 43.68503741372106,
+   lon: -79.75960840450671,
+   weight: 1
+   }, {
+   lat: 43.68503741372106,
+   lon: -79.75960840450671,
+   weight: 1
+   }];
+   require(['esri/Map', 'esri/views/MapView', 'esri/layers/FeatureLayer', 'esri/Graphic'], function(Map, MapView, FeatureLayer, Graphic) {
+   const map = new Map({
+   basemap: 'streets-night-vector'
+   });
+   const view = new MapView({
+   container: 'viewDiv',
+   map: map,
+   center: [-79.7596, 43.6850],
+   zoom: 14
+   });
+   const graphics = data.map(function(item) {
+   return new Graphic({
+   geometry: {
+   type: 'point',
+   latitude: item.lat,
+   longitude: item.lon
+   },
+   attributes: {
+   ObjectID: Math.random(),
+   weight: item.weight
+   }
+   });
+   });
+   const heatmapLayer = new FeatureLayer({
+   source: graphics,
+   objectIdField: 'ObjectID',
+   fields: [{
+   name: 'ObjectID',
+   type: 'oid'
+   }, {
+   name: 'weight',
+   type: 'double'
+   }],
+   geometryType: 'point',
+   spatialReference: {
+   wkid: 4326
+   },
+   renderer: {
+   type: 'heatmap',
+   field: 'weight',
+   colorStops: [{
+   ratio: 0,
+   color: 'rgba(255,255,255,0)'
+   }, {
+   ratio: 0.2,
+   color: 'cyan'
+   }, {
+   ratio: 0.5,
+   color: 'blue'
+   }, {
+   ratio: 0.8,
+   color: 'red'
+   }, {
+   ratio: 1,
+   color: 'yellow'
+   }],
+   maxPixelIntensity: 10,
+   minPixelIntensity: 0
+   }
+   });
+   map.add(heatmapLayer);
+   }); </script>
+</body>
+</html>
