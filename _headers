@@ -1,0 +1,4 @@
+/*
+  X-Frame-Options: ALLOW-FROM https://*.powerapps.com
+  Content-Security-Policy: default-src 'self' https: 'unsafe-inline' 'unsafe-eval'
+  Access-Control-Allow-Origin: *
